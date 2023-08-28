@@ -1,17 +1,15 @@
-from config import AppConfig
-from pysondb import PysonDB
+from config import AppConfig, isLeapYear
+from config import initDB
 from datetime import datetime
 
 
-def initWarehouse():
-    warehouse = PysonDB("./warehouse.json")
-    return warehouse
-    
-
-def calculateSingleItemYearly(symbol, records, strategy):
+def updateWarehouseSingleItemYearly(symbol, records):
     weightMap = { }
     for year in range(AppConfig['StartYear'], AppConfig['EndYear']+1):
-        weightMap[year] = [0.0]*366
+        if isLeapYear(year=year):
+            weightMap[year] = [0.0]*366
+        else:
+            weightMap[year] = [0.0]*365
     #print(weightMap)
     upTrends = records.get("up")
     downTrends = records.get("down")
@@ -26,35 +24,78 @@ def calculateSingleItemYearly(symbol, records, strategy):
         priceRaisePercentage = (upTrend['toPrice']-upTrend["fromPrice"])*100/(upTrend["fromPrice"])
         yearSize = 365
         yearRangeCheck = fromYear >= AppConfig["StartYear"] and fromYear <= AppConfig["EndYear"] and toYear >= AppConfig["StartYear"] and toYear <= AppConfig["EndYear"]
-        
+        print(fromDay, toDay, fromYear, toYear)
+        print(isLeapYear(fromYear))
         if not yearRangeCheck:
             continue
         # if covers diff years
         if fromYear != toYear:
-            if fromYear%4 == 0:
+            if isLeapYear(fromYear):
                 yearSize = 366
                 toDay += yearSize
             else:
                 toDay +=yearSize
 
         simpleRaisePerDay = priceRaisePercentage / (toDay - fromDay + 1)
-        
+        simpleRaisePerDay = round(simpleRaisePerDay, 5)
 
         if fromYear == toYear:
             for dayIndex in range(fromDay, (toDay+1)):
                 weightMap[fromYear][dayIndex-1] = simpleRaisePerDay
         elif fromYear < toYear:
+            print(fromDay, toDay, fromYear, toYear)
             for dayIndex in range(fromDay, (toDay+1)):
-                if dayIndex > yearSize:
-                    dayIndex -= yearSize
-                    weightMap[toYear][dayIndex-1] = simpleRaisePerDay
+                dayIndexCopy = dayIndex 
+                if dayIndexCopy > yearSize:
+                    dayIndexCopy -= yearSize
+                    weightMap[toYear][dayIndexCopy-1] = simpleRaisePerDay
                 else:
-                    weightMap[fromYear][dayIndex-1] = simpleRaisePerDay 
+                    weightMap[fromYear][dayIndexCopy-1] = simpleRaisePerDay 
+        else:
+            print("Data Error!! fromYear is greater than toYear!")
+
+    for downTrend in downTrends:
+        fromObj = datetime.strptime(downTrend["fromDate"], "%d-%m-%Y")
+        toObj = datetime.strptime(downTrend["toDate"], "%d-%m-%Y")
+        fromDay = int(fromObj.strftime("%j"))
+        toDay = int(toObj.strftime("%j"))
+        fromYear = int(fromObj.strftime("%Y"))
+        toYear = int(toObj.strftime("%Y"))
+        priceRaisePercentage = (downTrend['toPrice']-downTrend["fromPrice"])*100/(downTrend["fromPrice"])
+        yearSize = 365
+        yearRangeCheck = fromYear >= AppConfig["StartYear"] and fromYear <= AppConfig["EndYear"] and toYear >= AppConfig["StartYear"] and toYear <= AppConfig["EndYear"]
+        print(fromDay, toDay, fromYear, toYear)
+        print(isLeapYear(fromYear))
+        if not yearRangeCheck:
+            continue
+        # if covers diff years
+        if fromYear != toYear:
+            if isLeapYear(fromYear):
+                yearSize = 366
+                toDay += yearSize
+            else:
+                toDay +=yearSize
+
+        simpleRaisePerDay = priceRaisePercentage / (toDay - fromDay + 1)
+        simpleRaisePerDay = round(simpleRaisePerDay, 5)
+
+        if fromYear == toYear:
+            for dayIndex in range(fromDay, (toDay+1)):
+                weightMap[fromYear][dayIndex-1] = simpleRaisePerDay
+        elif fromYear < toYear:
+            print(fromDay, toDay, fromYear, toYear)
+            for dayIndex in range(fromDay, (toDay+1)):
+                dayIndexCopy = dayIndex 
+                if dayIndexCopy > yearSize:
+                    dayIndexCopy -= yearSize
+                    weightMap[toYear][dayIndexCopy-1] = simpleRaisePerDay
+                else:
+                    weightMap[fromYear][dayIndexCopy-1] = simpleRaisePerDay 
         else:
             print("Data Error!! fromYear is greater than toYear!")
             
-    print(weightMap)
-    warehouse = initWarehouse()
+    #print(weightMap)
+    warehouse = initDB(file="./warehouse.json")
     for year in weightMap:
         newRisingRate = {
             "symbol": symbol,

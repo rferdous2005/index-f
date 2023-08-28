@@ -1,20 +1,20 @@
-from pysondb import PysonDB
-from singleItem import calculateSingleItemYearly
+from singleItem import updateWarehouseSingleItemYearly
+from config import initDB
 
-def calculateAllItems(dataDict):
+def updateWarehouseAllItems(dataDict):
     print("Calculating using Simple Average! Please wait...")
     for item in dataDict:
         records = dataDict.get(item).get("records")
-        calculateSingleItemYearly(symbol=item, records=records, strategy="simple")
+        updateWarehouseSingleItemYearly(symbol=item, records=records)
 
     print("Calculating using Weighted Average! Please wait...")
 
 
 def main():
-    db = PysonDB("./database.json")
+    db = initDB("./database.json")
     dataAsDictionary = db.get_all()
-    calculateAllItems(dataAsDictionary)
-    print("Yearly calculation done for all symbols. Database updated!")
+    updateWarehouseAllItems(dataAsDictionary)
+    print("Yearly calculation done for all symbols. Database updated sucssfully!")
 
 
 main();
