@@ -14,7 +14,7 @@ def main():
     db = initDB("./database.json")
     dataAsDictionary = db.get_all()
     updateWarehouseAllItems(dataAsDictionary)
-    print("Yearly calculation done for all symbols. Database updated sucssfully!")
+    print("Yearly calculation done for all symbols. Database updated sucessfully!")
 
 
 main();

@@ -5,7 +5,10 @@ YearDateLabels = ['01-Jan', '02-Jan', '03-Jan', '04-Jan', '05-Jan', '06-Jan', '0
 AppConfig = {
     "StartYear": 2015,
     "EndYear": 2022,
-    "Volume": False
+    "Volume": False,
+    "StartDay": "",
+    "EndDay": "",
+    "symbols": []
 }
 
 def initDB(file):

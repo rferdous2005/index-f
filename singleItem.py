@@ -23,7 +23,7 @@ def updateWarehouseSingleItemYearly(symbol, records):
         toYear = int(toObj.strftime("%Y"))
         priceRaisePercentage = (upTrend['toPrice']-upTrend["fromPrice"])*100/(upTrend["fromPrice"])
         yearSize = 365
-        yearRangeCheck = fromYear >= AppConfig["StartYear"] and fromYear <= AppConfig["EndYear"] and toYear >= AppConfig["StartYear"] and toYear <= AppConfig["EndYear"]
+        yearRangeCheck = (fromYear >= AppConfig["StartYear"] and fromYear <= AppConfig["EndYear"]) or (toYear >= AppConfig["StartYear"] and toYear <= AppConfig["EndYear"])
         print(fromDay, toDay, fromYear, toYear)
         print(isLeapYear(fromYear))
         if not yearRangeCheck:
@@ -43,13 +43,16 @@ def updateWarehouseSingleItemYearly(symbol, records):
             for dayIndex in range(fromDay, (toDay+1)):
                 weightMap[fromYear][dayIndex-1] = simpleRaisePerDay
         elif fromYear < toYear:
-            print(fromDay, toDay, fromYear, toYear)
+            print(fromDay, toDay, fromYear, toYear, yearSize)
             for dayIndex in range(fromDay, (toDay+1)):
                 dayIndexCopy = dayIndex 
                 if dayIndexCopy > yearSize:
+                    if toYear > AppConfig["EndYear"]:
+                        break
                     dayIndexCopy -= yearSize
                     weightMap[toYear][dayIndexCopy-1] = simpleRaisePerDay
                 else:
+                    #print(dayIndexCopy)
                     weightMap[fromYear][dayIndexCopy-1] = simpleRaisePerDay 
         else:
             print("Data Error!! fromYear is greater than toYear!")
@@ -63,7 +66,7 @@ def updateWarehouseSingleItemYearly(symbol, records):
         toYear = int(toObj.strftime("%Y"))
         priceRaisePercentage = (downTrend['toPrice']-downTrend["fromPrice"])*100/(downTrend["fromPrice"])
         yearSize = 365
-        yearRangeCheck = fromYear >= AppConfig["StartYear"] and fromYear <= AppConfig["EndYear"] and toYear >= AppConfig["StartYear"] and toYear <= AppConfig["EndYear"]
+        yearRangeCheck = (fromYear >= AppConfig["StartYear"] and fromYear <= AppConfig["EndYear"]) or (toYear >= AppConfig["StartYear"] and toYear <= AppConfig["EndYear"])
         print(fromDay, toDay, fromYear, toYear)
         print(isLeapYear(fromYear))
         if not yearRangeCheck:
@@ -87,6 +90,8 @@ def updateWarehouseSingleItemYearly(symbol, records):
             for dayIndex in range(fromDay, (toDay+1)):
                 dayIndexCopy = dayIndex 
                 if dayIndexCopy > yearSize:
+                    if toYear > AppConfig["EndYear"]:
+                        break
                     dayIndexCopy -= yearSize
                     weightMap[toYear][dayIndexCopy-1] = simpleRaisePerDay
                 else:
