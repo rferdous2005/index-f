@@ -7,9 +7,9 @@ def updateWarehouseSingleItemYearly(symbol, records):
     weightMap = { }
     for year in range(AppConfig['StartYear'], AppConfig['EndYear']+1):
         if isLeapYear(year=year):
-            weightMap[year] = [0.0]*366
+            weightMap[year] = [0]*366
         else:
-            weightMap[year] = [0.0]*365
+            weightMap[year] = [0]*365
     #print(weightMap)
     upTrends = records.get("up")
     downTrends = records.get("down")
@@ -21,7 +21,7 @@ def updateWarehouseSingleItemYearly(symbol, records):
         toDay = int(toObj.strftime("%j"))
         fromYear = int(fromObj.strftime("%Y"))
         toYear = int(toObj.strftime("%Y"))
-        priceRaisePercentage = (upTrend['toPrice']-upTrend["fromPrice"])*100/(upTrend["fromPrice"])
+        priceRaisePercentage = (upTrend['toPrice']-upTrend["fromPrice"])*100.0/(upTrend["fromPrice"])
         yearSize = 365
         yearRangeCheck = (fromYear >= AppConfig["StartYear"] and fromYear <= AppConfig["EndYear"]) or (toYear >= AppConfig["StartYear"] and toYear <= AppConfig["EndYear"])
         print(fromDay, toDay, fromYear, toYear)
@@ -64,7 +64,7 @@ def updateWarehouseSingleItemYearly(symbol, records):
         toDay = int(toObj.strftime("%j"))
         fromYear = int(fromObj.strftime("%Y"))
         toYear = int(toObj.strftime("%Y"))
-        priceRaisePercentage = (downTrend['toPrice']-downTrend["fromPrice"])*100/(downTrend["fromPrice"])
+        priceRaisePercentage = (downTrend['toPrice']-downTrend["fromPrice"])*100.0/(downTrend["fromPrice"])
         yearSize = 365
         yearRangeCheck = (fromYear >= AppConfig["StartYear"] and fromYear <= AppConfig["EndYear"]) or (toYear >= AppConfig["StartYear"] and toYear <= AppConfig["EndYear"])
         print(fromDay, toDay, fromYear, toYear)
@@ -102,9 +102,14 @@ def updateWarehouseSingleItemYearly(symbol, records):
     #print(weightMap)
     warehouse = initDB(file="./warehouse.json")
     for year in weightMap:
-        newRisingRate = {
-            "symbol": symbol,
-            "year": year,
-            "risingRate": weightMap[year]
-        }
-        warehouse.add(newRisingRate)
+        if isLeapYear(year):
+            del weightMap[year][59]     # remove 29-feb data to match with all 365 days array
+        if all(num == 0 for num in weightMap[year]) and len(weightMap[year]) > 0:       # all weights are zero means company was non-existent that year
+            pass
+        else:
+            newRisingRate = {
+                "symbol": symbol,
+                "year": year,
+                "risingRate": weightMap[year]
+            }
+            warehouse.add(newRisingRate)
