@@ -8,7 +8,7 @@ AppConfig = {
     "Volume": False,
     "StartDay": "01-Aug",
     "EndDay": "31-Dec",
-    "selectedSymbols": ["SONALIANSH", "ADNTEL"],
+    "selectedSymbols": ["AIL","AMBEEPHA", "APEXFOOT"],
     "AverageFrom": 2015,
     "AverageTo": 2022
 }
